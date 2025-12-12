@@ -1,6 +1,6 @@
 # YouTube-comment-Stats
 
-download the zup file from release, unzip it.
+download the 7z file from release, extract it.
 chromium browsers: extensions > turn ON dev mode > load unpacked > refresh :)
 
 username • handle • comment_time (edited?) • account_age • subs_count
