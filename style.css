@@ -1,40 +1,52 @@
-/* FORCE FLEX LAYOUT: All on one line / wrap */
+/* Sidebar scrolling logic */
+.nomad-active #secondary {
+  height: calc(100vh - 56px);
+  overflow-y: scroll; 
+  padding-bottom: 50px;
+}
+
+.nomad-active #secondary::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure moved comments expanders are readable */
+ytd-expander[should-use-number-of-lines][collapsed]>#content.ytd-expander {
+    display: inline !important;
+}
+
+/* Fix stacking: Hide original if layout is messed up, though V11 script logic handles this via DOM moving */
+.nomad-active #below #comments {
+    display: none !important;
+}
+
+/* Stats Layout */
 .yt-stat-header-layout {
     display: flex !important;
     align-items: baseline !important;
     flex-wrap: wrap !important;
 }
 
-/* UNIVERSAL FONT: Same Size (1.3rem) & Weight (500) for EVERYONE */
 #header-author, 
 #header-author * {
     font-size: 1.3rem !important;
     font-weight: 500 !important;
     font-family: "Roboto", sans-serif !important;
     line-height: normal !important;
-    white-space: nowrap; /* Tries to keep pieces together */
+    white-space: nowrap; 
 }
 
-/* WHITE: Only the clickable Username */
 #author-text, #author-text span {
     color: #FFFFFF !important;
     text-decoration: none;
 }
 
-/* GRAY: Handle, Time, Separators, Stats */
 #published-time-text, 
-#published-time-text a,
+#published-time-text a, 
 .yt-gray-text {
-    color: #aaaaaa !important; /* Standard YouTube Gray */
+    color: #aaaaaa !important;
     text-decoration: none;
 }
 
-/* Cleanups */
 #published-time-text {
     margin: 0 !important;
-}
-
-/* If user hovers name, optional underline usually provided by YT, kept safe here */
-#author-text:hover {
-    text-decoration: none;
 }

@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "YT Stats Comment Info",
-  "version": "1.0.0",
+  "name": "Comments Enhancer for YouTube",
+  "version": "2.0.0",
+  "description": "Full Suite: Move comments to sidebar (with memory) + Join Date/Subs stats.",
   "permissions": [
     "scripting", 
-    "activeTab"
+    "activeTab", 
+    "storage"
   ],
   "host_permissions": [
     "https://www.youtube.com/*"
