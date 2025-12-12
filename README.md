@@ -10,6 +10,12 @@ Sample <br>
 
 Button (v2) <br>
 ![alt text](ss1.png)
-
-TODO:
+<br>
+##
+<br>
+WHY? <br>
+i hate bots, now i'll never like a account younger than 2 yrs with many subs :] <br>
+<br>
+##
+TODO: <br>
 V3? dislike count??
