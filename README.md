@@ -5,8 +5,8 @@ chromium browsers: extensions > turn ON dev mode > load unpacked > refresh :)
 
 username • handle • comment_time (edited?) • account_age • subs_count
 
-Sample
+Sample <br>
 ![alt text](ss0.png)
 
-Button (v2)
+Button (v2) <br>
 ![alt text](ss1.png)
