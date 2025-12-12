@@ -1,0 +1,40 @@
+/* FORCE FLEX LAYOUT: All on one line / wrap */
+.yt-stat-header-layout {
+    display: flex !important;
+    align-items: baseline !important;
+    flex-wrap: wrap !important;
+}
+
+/* UNIVERSAL FONT: Same Size (1.3rem) & Weight (500) for EVERYONE */
+#header-author, 
+#header-author * {
+    font-size: 1.3rem !important;
+    font-weight: 500 !important;
+    font-family: "Roboto", sans-serif !important;
+    line-height: normal !important;
+    white-space: nowrap; /* Tries to keep pieces together */
+}
+
+/* WHITE: Only the clickable Username */
+#author-text, #author-text span {
+    color: #FFFFFF !important;
+    text-decoration: none;
+}
+
+/* GRAY: Handle, Time, Separators, Stats */
+#published-time-text, 
+#published-time-text a,
+.yt-gray-text {
+    color: #aaaaaa !important; /* Standard YouTube Gray */
+    text-decoration: none;
+}
+
+/* Cleanups */
+#published-time-text {
+    margin: 0 !important;
+}
+
+/* If user hovers name, optional underline usually provided by YT, kept safe here */
+#author-text:hover {
+    text-decoration: none;
+}
