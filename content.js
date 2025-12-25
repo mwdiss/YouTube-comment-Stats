@@ -1,15 +1,37 @@
 /* =========================================================================
-   PART 1: COMMENT SWAP LOGIC
+   YOUTUBE PRO: CONTENT SCRIPT (VERSION 14.0 - SHORTS SUPPORT)
    ========================================================================= */
 
+/* --- CONFIG & STATE --- */
 const LAYOUT_KEY = "yt_ext_nomad_mode";
+let interactionTimer = null; 
+
+// HELPERS: Distinct checks for page type
+function isStandardVideo() {
+    return window.location.pathname === '/watch';
+}
+
+function isShorts() {
+    return window.location.pathname.startsWith('/shorts/');
+}
+
+function isAnyVideoContext() {
+    return isStandardVideo() || isShorts();
+}
+
+/* =========================================================================
+   PART 1: COMMENT SWAP LOGIC ("Comnt >") 
+   [Enabled ONLY for Standard Videos]
+   ========================================================================= */
 
 function runLayoutLogic() {
+    if (!isStandardVideo()) return; // Disable on Shorts
+
     const savedMode = localStorage.getItem(LAYOUT_KEY) || 'bottom';
     
     const comments = document.querySelector('#comments');
     const secondaryCol = document.querySelector('#secondary');
-    const relatedInner = document.querySelector('#secondary-inner');
+    const relatedInner = document.querySelector('#secondary-inner') || document.querySelector('#related');
     const primaryCol = document.querySelector('#primary');
     const belowCol = document.querySelector('#below');
 
@@ -17,16 +39,14 @@ function runLayoutLogic() {
 
     if (savedMode === 'right') {
         document.body.classList.add('nomad-active');
-        
         if (!secondaryCol.contains(comments)) {
-            secondaryCol.appendChild(comments);
+            secondaryCol.insertBefore(comments, secondaryCol.firstChild);
         }
         if (!primaryCol.contains(relatedInner)) {
             primaryCol.appendChild(relatedInner);
         }
     } else {
         document.body.classList.remove('nomad-active');
-
         if (!secondaryCol.contains(relatedInner)) {
             secondaryCol.appendChild(relatedInner);
         }
@@ -44,17 +64,15 @@ function toggleLayout() {
 }
 
 function injectLayoutButton() {
-    // 1. Target the Menu Parent (This holds the like buttons AND the ... button)
-    // We try to be specific to the video metadata section
+    if (!isStandardVideo()) return; // No swap button on Shorts
+
     const menuRenderer = document.querySelector('ytd-watch-metadata #menu ytd-menu-renderer') || 
-                         document.querySelector('ytd-menu-renderer'); // fallback
+                         document.querySelector('ytd-menu-renderer');
     
     if (!menuRenderer) return;
-
-    // Check if we already exist
     if (document.querySelector('#yt-nomad-btn')) return;
 
-    // 2. Build Button
+    // CONTAINER
     const btnContainer = document.createElement('div');
     btnContainer.id = 'yt-nomad-btn';
     btnContainer.style.display = 'inline-flex';
@@ -62,10 +80,9 @@ function injectLayoutButton() {
     btnContainer.style.marginLeft = '8px';
     btnContainer.style.cursor = 'pointer';
 
+    // BUTTON
     const btn = document.createElement('button');
     btn.innerText = "Comnt \u{3009}"; 
-    
-    // Style matches YT Tonal Button
     btn.className = 'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m';
     btn.style.background = 'rgba(255,255,255,0.1)';
     btn.style.color = '#fff';
@@ -81,34 +98,22 @@ function injectLayoutButton() {
     btn.onclick = toggleLayout;
     btnContainer.appendChild(btn);
 
-    // 3. PLACEMENT LOGIC: Right side of "..."
-    // According to your HTML, the "..." button is <yt-button-shape id="button-shape">
-    
+    // PLACEMENT: Right of "..."
     const dotsButton = menuRenderer.querySelector('#button-shape');
-    
     if (dotsButton) {
-        // We insert the container AFTER the dots button
         if (dotsButton.nextSibling) {
              menuRenderer.insertBefore(btnContainer, dotsButton.nextSibling);
         } else {
              menuRenderer.appendChild(btnContainer);
         }
     } else {
-        // Fallback: If "..." isn't rendered yet or differs, just append to main container
         menuRenderer.appendChild(btnContainer);
     }
 }
 
-// Watch DOM for redrawing (navigating videos)
-const nomadObserver = new MutationObserver(() => {
-    injectLayoutButton();
-    runLayoutLogic();
-});
-nomadObserver.observe(document.body, { childList: true, subtree: true });
-
-
 /* =========================================================================
    PART 2: STATS LOGIC
+   [Enabled for BOTH Standard Videos and Shorts]
    ========================================================================= */
 
 function makeTimeShort(text) {
@@ -145,9 +150,13 @@ const linkObserver = new MutationObserver((mutations) => {
 });
 
 function processComments() {
+    // RUNS ON BOTH SHORTS AND VIDEO
     const headers = document.querySelectorAll('#header-author');
+    
     headers.forEach(header => {
         const root = header.closest('ytd-comment-view-model') || header.closest('ytd-comment-renderer');
+        
+        // Skip if already active
         if (!root || root.getAttribute('data-v10-active')) return;
         root.setAttribute('data-v10-active', 'true');
 
@@ -208,9 +217,48 @@ function loadStats(commentRoot, force = false) {
     });
 }
 
-const contentObserver = new MutationObserver((mutations) => {
-    if(mutations.some(m => m.addedNodes.length > 0)) processComments();
-});
-contentObserver.observe(document.body, { childList: true, subtree: true });
 
-processComments();
+/* =========================================================================
+   PART 3: LIFECYCLE (The Manager)
+   ========================================================================= */
+
+function checkDOM() {
+    // 1. Swap Button (Standard Video Only)
+    if (isStandardVideo()) {
+        injectLayoutButton();
+        runLayoutLogic();
+    }
+    
+    // 2. Stats (Any Video Type including Shorts)
+    if (isAnyVideoContext()) {
+        processComments();
+    }
+}
+
+// 1. Observer: Detects dynamic loading (AJAX navigation / comments opening)
+const globalObserver = new MutationObserver((mutations) => {
+    if (mutations.some(m => m.addedNodes.length > 0)) {
+        checkDOM();
+    }
+});
+globalObserver.observe(document.body, { childList: true, subtree: true });
+
+// 2. YouTube Event: Navigate Finish (Home -> Video)
+document.addEventListener("yt-navigate-finish", function() {
+    checkDOM();
+    runSmartInterval(); 
+});
+
+// 3. Fallback Interval (Catches late loaders)
+function runSmartInterval() {
+    if(interactionTimer) clearInterval(interactionTimer);
+    
+    let attempts = 0;
+    interactionTimer = setInterval(() => {
+        checkDOM();
+        attempts++;
+        if(attempts > 10) clearInterval(interactionTimer);
+    }, 500);
+}
+
+runSmartInterval();

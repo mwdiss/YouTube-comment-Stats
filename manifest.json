@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Comments Enhancer for YouTube",
-  "version": "2.0.0",
-  "description": "Full Suite: Move comments to sidebar (with memory) + Join Date/Subs stats.",
+  "name": "YT Pro: Comnt & Stats",
+  "version": "12.0.0",
+  "description": "Right-Side comments button (placed correctly) + Advanced Stats.",
   "permissions": [
     "scripting", 
     "activeTab", 
